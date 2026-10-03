@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Raksha Band: interactive 3D model</title>
+<link rel="stylesheet" href="fonts/fonts-band.css">
+<style>
+:root {
+  --bg: #E6ECF2; --panel: #FFFFFF; --ink: #1F3864; --ink-soft: #52627A; --line: #C9D5E2;
+  --accent: #0070C0; --accent-ink: #FFFFFF; --warm: #D9731A; --ok: #1B7F3B; --bad: #C62828;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111A26; --panel: #1A2636; --ink: #E4ECF6; --ink-soft: #9FB1C8; --line: #2E3F55;
+    --accent: #4DA3E6; --accent-ink: #0B1520; --warm: #F0A050; --ok: #4CC47A; --bad: #F06A6A;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111A26; --panel: #1A2636; --ink: #E4ECF6; --ink-soft: #9FB1C8; --line: #2E3F55;
+  --accent: #4DA3E6; --accent-ink: #0B1520; --warm: #F0A050; --ok: #4CC47A; --bad: #F06A6A;
+}
+*, *::before, *::after { box-sizing: inherit; }
+html { height: 100%; scroll-padding-top: env(safe-area-inset-top, 0px); }
+body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); overflow: hidden;
+  font-family: "IBM Plex Sans", "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+#stage { position: fixed; inset: 0; }
+canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
+canvas:active { cursor: grabbing; }
+button { font: inherit; }
+button:focus-visible { outline: 2px solid var(--warm); outline-offset: 2px; }
+
+.intro { position: fixed; top: calc(18px + env(safe-area-inset-top, 0px)); left: 24px; max-width: 380px; pointer-events: none; }
+.intro h1 { margin: 0; font-size: 30px; line-height: 1.1; font-weight: 700; letter-spacing: -0.01em; }
+.intro p { margin: 8px 0 0; font-size: 15px; line-height: 1.45; color: var(--ink-soft); }
+.intro .dims { margin-top: 6px; font-size: 13px; color: var(--ink-soft); }
+
+.side { position: fixed; top: calc(18px + env(safe-area-inset-top, 0px)); right: 20px; width: 272px;
+  display: flex; flex-direction: column; gap: 10px; max-height: calc(100% - 110px); }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px; }
+.card h2 { margin: 2px 6px 8px; font-size: 14px; font-weight: 600; color: var(--ink-soft); }
+.tabs { display: none; }
+#partList { overflow-y: auto; max-height: 300px; }
+#partList button { display: flex; justify-content: space-between; align-items: baseline; width: 100%;
+  background: none; border: 0; border-radius: 6px; padding: 6px 8px; text-align: left; font-size: 14px; color: var(--ink); cursor: pointer; }
+#partList button span { color: var(--ink-soft); font-size: 13px; }
+#partList button:hover { background: var(--bg); }
+#partList button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+#partList button[aria-pressed="true"] span { color: var(--accent-ink); }
+
+.readouts { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 0 2px 8px; }
+.ro { background: var(--bg); border-radius: 6px; padding: 6px 8px; }
+.ro b { display: block; font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.ro small { font-size: 12px; color: var(--ink-soft); }
+.ro.risk { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; }
+.ro.risk b { font-size: 20px; }
+.riskbar { height: 6px; border-radius: 3px; background: var(--line); margin-top: 4px; overflow: hidden; width: 120px; }
+.riskbar i { display: block; height: 100%; width: 18%; background: var(--ok); transition: width .3s, background .3s; }
+.scen { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 2px; }
+.scen button { flex: 1 1 auto; border: 1px solid var(--line); background: var(--panel); color: var(--ink);
+  border-radius: 7px; padding: 7px 8px; font-size: 13.5px; font-weight: 500; cursor: pointer; }
+.scen button:hover { border-color: var(--accent); }
+.scen button[aria-pressed="true"] { background: var(--ink); color: var(--panel); border-color: var(--ink); }
+.simnote { margin: 8px 4px 0; font-size: 11.5px; color: var(--ink-soft); }
+
+.info { position: fixed; left: 24px; bottom: calc(86px + env(safe-area-inset-bottom, 0px));
+  width: min(380px, calc(100% - 48px)); background: var(--panel); border: 1px solid var(--line);
+  border-left: 4px solid var(--warm); border-radius: 8px; padding: 13px 16px; }
+.info.alert { border-left-color: var(--bad); }
+.info h3 { margin: 0; font-size: 17px; font-weight: 600; }
+.info .price { font-size: 14px; color: var(--warm); font-weight: 600; margin-top: 2px; }
+.info p { margin: 6px 0 0; font-size: 14px; line-height: 1.45; color: var(--ink-soft); }
+.info .actions { display: flex; gap: 8px; margin-top: 10px; }
+.info .actions:empty { display: none; }
+.info .actions button { border: 1px solid var(--line); background: var(--panel); color: var(--ink);
+  border-radius: 7px; padding: 6px 12px; font-size: 13.5px; font-weight: 500; cursor: pointer; }
+.info .actions button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+
+.modes { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  display: flex; gap: 4px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 5px; width: max-content; max-width: calc(100% - 20px); }
+.modes button { font-size: 14px; font-weight: 500; color: var(--ink); background: none;
+  border: 1px solid transparent; border-radius: 7px; padding: 8px 13px; cursor: pointer; white-space: nowrap; }
+.modes button:hover { border-color: var(--line); }
+.modes button[aria-pressed="true"] { background: var(--ink); color: var(--panel); }
+.modes .sep { width: 1px; background: var(--line); margin: 4px 2px; }
+
+.note { position: fixed; right: 20px; bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  font-size: 12px; color: var(--ink-soft); max-width: 230px; text-align: right; line-height: 1.4; }
+
+.tag { position: fixed; pointer-events: none; font-size: 12.5px; font-weight: 600; color: var(--ink);
+  background: var(--panel); border: 1px solid var(--line); border-radius: 5px; padding: 3px 7px;
+  white-space: nowrap; transform: translate(-50%, -50%); opacity: 0; transition: opacity .25s; }
+.tag.show { opacity: 1; }
+
+@media (max-width: 860px) {
+  .intro { left: 14px; right: 14px; max-width: none; top: calc(12px + env(safe-area-inset-top, 0px)); }
+  .intro h1 { font-size: 23px; }
+  .intro p { font-size: 13px; margin-top: 4px; }
+  .intro .dims { display: none; }
+  .note { display: none; }
+  .side { top: auto; left: 10px; right: 10px; width: auto; max-height: none;
+    bottom: calc(62px + env(safe-area-inset-bottom, 0px)); gap: 0; }
+  .side .card { padding: 6px; border-radius: 10px; }
+  .side .card h2 { display: none; }
+  .tabs { display: flex; gap: 4px; margin-bottom: 6px; }
+  .tabs button { flex: 1; border: 0; border-radius: 6px; padding: 6px; background: var(--bg); color: var(--ink); font-size: 13px; font-weight: 600; cursor: pointer; }
+  .tabs button[aria-selected="true"] { background: var(--ink); color: var(--panel); }
+  .side[data-tab="parts"] #simCard { display: none; }
+  .side[data-tab="sim"] #partsCard { display: none; }
+  .side .card + .card { margin-top: 0; }
+  #partsCard, #simCard { border: 0; padding: 0; background: none; }
+  .sidewrap { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 6px; }
+  #partList { display: flex; gap: 4px; overflow-x: auto; max-height: none; }
+  #partList button { width: auto; flex: 0 0 auto; gap: 6px; font-size: 13px; padding: 6px 8px; white-space: nowrap; }
+  .readouts { grid-template-columns: repeat(4, 1fr); gap: 4px; margin-bottom: 6px; }
+  .ro { padding: 4px 6px; } .ro b { font-size: 14px; } .ro small { font-size: 10.5px; }
+  .ro.risk { grid-column: 1 / -1; padding: 4px 8px; } .ro.risk b { font-size: 15px; }
+  .simnote { display: none; }
+  .info { left: 10px; width: calc(100% - 20px); padding: 9px 12px; bottom: auto;
+    top: calc(92px + env(safe-area-inset-top, 0px)); }
+  .info h3 { font-size: 15px; } .info p { font-size: 13px; }
+  .modes { bottom: calc(10px + env(safe-area-inset-bottom, 0px)); padding: 4px; gap: 2px; left: 10px; right: 10px; transform: none; width: auto; max-width: none; overflow-x: auto; scrollbar-width: none; }
+  .modes button { font-size: 12.5px; padding: 7px 8px; }
+  .modes .sep { display: none; }
+  .tag { font-size: 11px; }
+}
+@media (prefers-reduced-motion: reduce) { .riskbar i, .tag { transition: none; } }
+@media (max-width:1100px){.note{display:none}}
+</style>
+</head>
+<body>
+<div id="stage"></div>
+
+<div class="intro">
+  <h1>Raksha Band</h1>
+  <p>Interactive concept model. Drag to turn, scroll or pinch to zoom, tap a part, or try a scenario.</p>
+  <div class="dims">Pod about 40 × 32 × 14 mm · 6 sensors and modules</div>
+</div>
+
+<aside class="side" id="side" data-tab="parts">
+  <div class="sidewrap">
+    <div class="tabs" role="tablist">
+      <button role="tab" aria-selected="true" data-tab="parts">Parts</button>
+      <button role="tab" aria-selected="false" data-tab="sim">Live simulation</button>
+    </div>
+    <div class="card" id="partsCard">
+      <h2>Parts inside</h2>
+      <div id="partList"></div>
+    </div>
+    <div class="card" id="simCard">
+      <h2>Live simulation</h2>
+      <div class="readouts">
+        <div class="ro"><b id="rHR">78</b><small>Heart rate, bpm</small></div>
+        <div class="ro"><b id="rSkin">33.8</b><small>Skin temp, °C</small></div>
+        <div class="ro"><b id="rCore">37.0</b><small>Est. core temp, °C</small></div>
+        <div class="ro"><b id="rHI">31</b><small>Heat index, °C</small></div>
+        <div class="ro risk"><div><b id="rRisk">18</b><small> risk score</small></div><div><small id="rLevel">Low</small><div class="riskbar"><i id="rBar"></i></div></div></div>
+      </div>
+      <div class="scen" role="group" aria-label="Scenario">
+        <button data-scen="normal" aria-pressed="true">Normal day</button>
+        <button data-scen="heat" aria-pressed="false">Heat wave</button>
+        <button data-scen="fall" aria-pressed="false">Fall</button>
+      </div>
+      <p class="simnote">Simulated values that show how the band responds. Not real measurements.</p>
+    </div>
+  </div>
+</aside>
+
+<div class="info" id="info" aria-live="polite">
+  <h3 id="infoName">How it fits together</h3>
+  <div class="price" id="infoPrice"></div>
+  <p id="infoText">Sensors sit on the skin side, the battery and brain in the middle, and the air sensor under a vent on top.</p>
+  <div class="actions" id="infoActions"></div>
+</div>
+
+<div class="modes" role="group" aria-label="View">
+  <button data-mode="assembled" aria-pressed="true">Assembled</button>
+  <button data-mode="exploded" aria-pressed="false">Exploded</button>
+  <button data-mode="inside" aria-pressed="false">See inside</button>
+  <button id="flipBtn" aria-pressed="false">Skin side</button>
+  <span class="sep"></span>
+  <button id="tourBtn" aria-pressed="false">Guided tour</button>
+  <button id="resetBtn">Reset</button>
+</div>
+
+<div class="note">Concept model of the proposed Raksha Band, SIH 2026 (PS 26181). Sizes approximate; prices are single-unit retail.</div>
+
+<script src="vendor/three.min.js"></script>
+<script src="band-3d.js"></script>
+</body>
+</html>

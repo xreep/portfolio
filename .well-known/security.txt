@@ -1,0 +1,4 @@
+Contact: mailto:aditya8251358@gmail.com
+Expires: 2027-10-02T00:00:00.000Z
+Preferred-Languages: en, hi
+Policy: https://github.com/xreep/portfolio/blob/main/SECURITY.md
