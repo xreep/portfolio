@@ -80,8 +80,9 @@ nav.main a:hover{color:var(--blue)}
 .cur b{display:inline-block;margin:-2px 0 0 14px;font-size:13px;font-weight:600;color:#fff;padding:3px 9px;border-radius:999px}
 .c1{left:calc(100% - 8px);top:30%}.c1 svg{fill:var(--magenta)}.c1 b{background:var(--magenta)}
 .c2{left:70%;top:78%;animation-delay:-2s}.c2 svg{fill:var(--purple)}.c2 b{background:var(--purple)}
-.c3{left:-34px;top:88%;animation-delay:-4s}.c3 svg{fill:var(--blue)}.c3 b{background:var(--blue)}
+.c3{left:10px;top:calc(100% - 4px);animation:drift-up 6s ease-in-out -4s infinite}.c3 svg{fill:var(--blue)}.c3 b{background:var(--blue)}
 @keyframes drift{0%,100%{transform:translate(0,0)}33%{transform:translate(14px,-10px)}66%{transform:translate(-8px,8px)}}
+@keyframes drift-up{0%,100%{transform:translate(0,0)}33%{transform:translate(14px,-4px)}66%{transform:translate(-6px,-1px)}}
 .hfoot{position:relative;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:12px 20px;gap:12px}
 .hfoot .tag{font-size:14.5px;font-weight:600;line-height:1.45}
 .socials{display:flex;gap:6px;border:1px solid var(--line2);border-radius:999px;padding:4px}
