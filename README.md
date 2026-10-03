@@ -8,7 +8,8 @@ portfolio/
 ├── style.css         all styles (dark + light theme)
 ├── app.js            content arrays, page router, animations, AI box
 ├── knowledge.json    everything the "Ask about Aditya" box knows (single source for the AI)
-├── api/ask.js        Vercel function that answers questions with Claude
+├── api/ask.js        Vercel function that answers questions with AI (Groq, Gemini or Claude)
+├── api/heat-index.js public Raksha heat-stress API used by the API Lab page
 ├── vercel.json       function + cache settings
 ├── robots.txt
 └── assets/           avatar.svg, band-3d.html (3D model), Raksha screenshots (.webp)
@@ -58,15 +59,22 @@ and update `knowledge.json`.
 **New certificate** — add `[title, issuer, colour]` to `CERTS` and a line in `knowledge.json`.
 
 ## AI box ("Ask about Aditya")
-Answer order: Vercel function (Claude) → Claude-in-claude.ai preview → offline answers from `knowledge.json`.
+Answer order: Vercel function (Groq / Gemini / Claude) → Claude-in-claude.ai preview → offline answers from `knowledge.json`.
 So the box always answers; the AI just makes it smarter.
 
-To turn on real AI answers:
-1. Get an API key at console.anthropic.com and set a monthly spend limit (Haiku costs very little per question).
-2. Vercel → your project → Settings → Environment Variables → add `ANTHROPIC_API_KEY`.
-3. Redeploy. Optional: `ASK_MODEL` to change the model.
+To turn on real AI answers, set **one** provider key (Vercel → Settings → Environment Variables, tick Production):
 
-The function caps question length, answer length, and rate-limits each visitor (8 questions/minute).
+| Provider | Env var | Get a key | Cost | Default model |
+|---|---|---|---|---|
+| Groq (recommended) | `GROQ_API_KEY` | console.groq.com → API Keys | free tier | `llama-3.3-70b-versatile` |
+| Google Gemini | `GEMINI_API_KEY` | aistudio.google.com/apikey | free tier | `gemini-3.5-flash-lite` |
+| Anthropic Claude | `ANTHROPIC_API_KEY` | console.anthropic.com (set a spend limit) | paid | `claude-haiku-4-5-20251001` |
+
+Then **redeploy** (env vars only apply to new deployments). If several keys are set, the first in the order
+Groq → Gemini → Claude wins; force one with `ASK_PROVIDER=groq|gemini|anthropic`. `ASK_MODEL` overrides the model.
+If the provider fails or hits its free-tier limit, the box falls back to the offline answers.
+
+The function caps question length, answer length, and rate-limits each visitor (6 questions/minute, 60/day).
 The AI is instructed to answer only from `knowledge.json` and say so when it doesn't know.
 
 ## Security
@@ -79,7 +87,7 @@ per-IP limits, timeout, output filter, no logging); email is assembled at runtim
 and no files loaded from other domains. Put new JS in `app.js` (or a file under `assets/js/`).
 
 **Vercel settings to turn on once (dashboard):**
-1. Settings → Environment Variables: `ANTHROPIC_API_KEY`, and `ALLOWED_ORIGINS` = your live URL(s), comma-separated.
+1. Settings → Environment Variables: one AI key (`GROQ_API_KEY`, `GEMINI_API_KEY` or `ANTHROPIC_API_KEY`), and `ALLOWED_ORIGINS` = your live URL(s), comma-separated.
 2. Firewall → Add rule: path `/api/ask`, rate limit 10 requests / 60 s per IP, action Deny.
 3. Firewall → Bot Protection: On.
 4. Settings → Deployment Protection: protect Preview deployments.
