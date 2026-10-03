@@ -62,6 +62,13 @@ function pickProvider() {
   return null;
 }
 
+// Error carrying only the provider's HTTP status: no key, question or answer text is ever logged.
+function upstreamError(ai, r) {
+  const e = new Error(`${ai.name} returned ${r.status}`);
+  e.status = r.status;
+  return e;
+}
+
 // One request to whichever provider is configured; returns the raw answer text.
 async function askModel(ai, system, user, signal) {
   if (ai.name === 'anthropic') {
@@ -71,7 +78,7 @@ async function askModel(ai, system, user, signal) {
       headers: { 'x-api-key': ai.key, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
       body: JSON.stringify({ model: ai.model, max_tokens: 350, system, messages: [{ role: 'user', content: user }] }),
     });
-    if (!r.ok) throw new Error(`upstream ${r.status}`);
+    if (!r.ok) throw upstreamError(ai, r);
     const data = await r.json();
     return (data.content || []).filter((b) => b.type === 'text').map((b) => b.text).join('');
   }
@@ -86,7 +93,7 @@ async function askModel(ai, system, user, signal) {
       messages: [{ role: 'system', content: system }, { role: 'user', content: user }],
     }),
   });
-  if (!r.ok) throw new Error(`upstream ${r.status}`);
+  if (!r.ok) throw upstreamError(ai, r);
   const data = await r.json();
   return (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '';
 }
@@ -127,8 +134,9 @@ module.exports = async (req, res) => {
     const answer = clean(await askModel(ai, system, user, ctrl.signal));
     if (!answer) return send(res, 502, { error: 'Empty answer' });
     return send(res, 200, { answer });
-  } catch {
-    return send(res, 502, { error: 'Request failed' });
+  } catch (e) {
+    console.error('ask:', e.name === 'AbortError' ? `${ai.name} timed out` : e.message);
+    return send(res, 502, { error: 'Request failed', upstream: e.status || (e.name === 'AbortError' ? 'timeout' : 'network') });
   } finally {
     clearTimeout(timer);
   }
