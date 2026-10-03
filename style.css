@@ -324,7 +324,7 @@ footer{padding:20px 14px 0}
 
 @media (max-width:900px){
   .agrid{grid-template-columns:1fr}
-  .photo{max-width:360px}
+  .photo{max-width:300px}
   .hgrid{grid-template-columns:1fr}
   .hgrid h3{min-height:0}
   .tkg{grid-template-columns:1fr}
@@ -387,6 +387,18 @@ footer{padding:20px 14px 0}
 .photo.has-img img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 20%}
 .photo.has-img::after{content:"";position:absolute;inset:auto 0 0 0;height:34%;background:linear-gradient(transparent,rgba(8,9,10,.72));pointer-events:none}
 .photo.has-img .cap{z-index:1;color:#f1efe4}
+/* about: photo polish + facts beside it */
+.photo.has-img{background:radial-gradient(circle at 50% 35%,color-mix(in srgb,var(--purple) 22%,transparent),transparent 70%),var(--card);box-shadow:0 0 0 6px color-mix(in srgb,var(--purple) 10%,transparent),0 30px 60px -32px color-mix(in srgb,var(--purple) 55%,transparent)}
+.photo.has-img img{transition:transform .6s cubic-bezier(.2,.7,.2,1)}
+.photo.has-img:hover img{transform:scale(1.03)}
+.pchip{position:absolute;z-index:1;left:12px;top:12px;display:inline-flex;align-items:center;gap:7px;padding:5px 11px;border-radius:999px;font-size:12.5px;font-weight:600;color:#f1efe4;background:rgba(8,9,10,.55);border:1px solid rgba(255,255,255,.14);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.pchip i{width:7px;height:7px;border-radius:50%;background:var(--green);animation:ping 2s infinite}
+.afacts{display:grid;grid-template-columns:1fr 1fr;gap:1px;margin:26px 0 0;max-width:640px;border:1px solid var(--line2);border-radius:12px;overflow:hidden;background:var(--line2)}
+.afacts div{background:var(--bg);padding:12px 16px}
+.afacts dt{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--dim)}
+.afacts dd{margin:3px 0 0;font-size:15px;font-weight:600;line-height:1.35}
+.acta{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+.acta .askcta{margin-top:0}
 /* ask about me */
 .askcta{display:inline-flex;align-items:center;gap:9px;margin-top:26px;border:1px solid var(--line2);border-radius:999px;padding:10px 16px 10px 12px;font-size:15px;font-weight:600;background:color-mix(in srgb,var(--bg) 70%,transparent);transition:border-color .2s,background .2s}
 .askcta:hover{border-color:var(--purple);background:var(--chip)}
@@ -727,3 +739,4 @@ html.has-cring .cring,html.has-cring .cdot{opacity:1}
   *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
   .rv{opacity:1;filter:none;transform:none}
 }
+@media (max-width:420px){.afacts{grid-template-columns:1fr}}
