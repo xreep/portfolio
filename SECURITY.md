@@ -5,7 +5,7 @@ with the details. Please don't open a public issue for it. I'll reply within 7 d
 
 What's in place:
 - Strict Content Security Policy: scripts, styles, fonts and images load only from this domain; Trusted Types enforced.
-- No third-party scripts, fonts, analytics or trackers.
+- No third-party scripts, fonts or trackers. Page views are counted with Vercel Web Analytics, served first-party from `/_vercel/insights` (cookieless, no personal data).
 - HSTS, frame blocking, nosniff, strict referrer policy, Permissions-Policy denying device APIs, COOP/CORP.
 - The AI endpoint (`/api/ask`) checks the request origin, accepts only small JSON bodies, rate-limits per IP,
   times out, filters its output, and never stores questions. The API key lives only in Vercel environment variables.

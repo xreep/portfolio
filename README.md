@@ -79,7 +79,8 @@ The AI is instructed to answer only from `knowledge.json` and say so when it doe
 
 ## Security
 See `SECURITY.md`. Summary: strict CSP (self-only scripts, styles, fonts, images) with Trusted Types; no third-party
-scripts, fonts or trackers (fonts and three.js are self-hosted in `assets/`); HSTS, frame blocking, nosniff,
+scripts, fonts or trackers (fonts and three.js are self-hosted in `assets/`; page views use first-party, cookieless
+Vercel Web Analytics via `assets/js/analytics.js`); HSTS, frame blocking, nosniff,
 Permissions-Policy, COOP/CORP in `vercel.json`; hardened `/api/ask` (origin check, JSON-only, size cap,
 per-IP limits, timeout, output filter, no logging); email is assembled at runtime; `.env` files are git-ignored.
 
