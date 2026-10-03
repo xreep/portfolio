@@ -1,7 +1,7 @@
 // POST /api/ask  { q: "question" }  ->  { answer }
 // Hardened Vercel serverless function for the "Ask about Aditya" box.
 // Env vars (Vercel > Project > Settings > Environment Variables). Set ONE provider key:
-//   GROQ_API_KEY       free tier, key from console.groq.com            (default model llama-3.3-70b-versatile)
+//   GROQ_API_KEY       free tier, key from console.groq.com            (default model openai/gpt-oss-120b)
 //   GEMINI_API_KEY     free tier, key from aistudio.google.com/apikey  (default model gemini-3.5-flash-lite)
 //   ANTHROPIC_API_KEY  paid, key from console.anthropic.com            (default model claude-haiku-4-5-20251001)
 //   ASK_PROVIDER       (optional)  groq | gemini | anthropic; if unset, the first key found in that order is used
@@ -14,7 +14,7 @@ const path = require('path');
 const KN = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'knowledge.json'), 'utf8'));
 // groq and gemini both speak the OpenAI chat-completions format
 const PROVIDERS = {
-  groq: { env: 'GROQ_API_KEY', model: 'llama-3.3-70b-versatile', url: 'https://api.groq.com/openai/v1/chat/completions' },
+  groq: { env: 'GROQ_API_KEY', model: 'openai/gpt-oss-120b', url: 'https://api.groq.com/openai/v1/chat/completions' },
   gemini: { env: 'GEMINI_API_KEY', model: 'gemini-3.5-flash-lite', url: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions' },
   anthropic: { env: 'ANTHROPIC_API_KEY', model: 'claude-haiku-4-5-20251001', url: 'https://api.anthropic.com/v1/messages' },
 };
@@ -88,7 +88,9 @@ async function askModel(ai, system, user, signal) {
     headers: { authorization: `Bearer ${ai.key}`, 'content-type': 'application/json' },
     body: JSON.stringify({
       model: ai.model,
-      max_tokens: 350,
+      // reasoning models spend part of the budget thinking, so allow more and keep the effort low
+      max_tokens: /gpt-oss/.test(ai.model) ? 900 : 350,
+      ...(/gpt-oss/.test(ai.model) ? { reasoning_effort: 'low' } : {}),
       temperature: 0.4,
       messages: [{ role: 'system', content: system }, { role: 'user', content: user }],
     }),

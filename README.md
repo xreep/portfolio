@@ -66,7 +66,7 @@ To turn on real AI answers, set **one** provider key (Vercel → Settings → En
 
 | Provider | Env var | Get a key | Cost | Default model |
 |---|---|---|---|---|
-| Groq (recommended) | `GROQ_API_KEY` | console.groq.com → API Keys | free tier | `llama-3.3-70b-versatile` |
+| Groq (recommended) | `GROQ_API_KEY` | console.groq.com → API Keys | free tier | `openai/gpt-oss-120b` |
 | Google Gemini | `GEMINI_API_KEY` | aistudio.google.com/apikey | free tier | `gemini-3.5-flash-lite` |
 | Anthropic Claude | `ANTHROPIC_API_KEY` | console.anthropic.com (set a spend limit) | paid | `claude-haiku-4-5-20251001` |
 
