@@ -74,12 +74,13 @@ nav.main a:hover{color:var(--blue)}
 .connect{position:absolute;left:100%;top:50%;transform:translateY(-50%);margin-left:10px;white-space:nowrap;display:inline-flex;align-items:center;gap:8px;font-size:14px;padding:10px 14px}
 .connect i{width:13px;height:13px;border-radius:50%;background:var(--green);box-shadow:0 0 0 0 var(--green);animation:ping 2s infinite}
 @keyframes ping{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--green) 60%,transparent)}100%{box-shadow:0 0 0 10px transparent}}
-.cur{position:absolute;pointer-events:none;animation:drift 6s ease-in-out infinite}
+.hello .pill{position:relative}
+.cur{position:absolute;z-index:2;pointer-events:none;text-align:left;white-space:nowrap;line-height:1.2;animation:drift 6s ease-in-out infinite}
 .cur svg{width:20px;height:20px;display:block}
 .cur b{display:inline-block;margin:-2px 0 0 14px;font-size:13px;font-weight:600;color:#fff;padding:3px 9px;border-radius:999px}
-.c1{left:55%;top:4%}.c1 svg{fill:var(--magenta)}.c1 b{background:var(--magenta)}
-.c2{left:80%;top:60%;animation-delay:-2s}.c2 svg{fill:var(--purple)}.c2 b{background:var(--purple)}
-.c3{left:-4%;top:72%;animation-delay:-4s}.c3 svg{fill:var(--blue)}.c3 b{background:var(--blue)}
+.c1{left:calc(100% - 8px);top:30%}.c1 svg{fill:var(--magenta)}.c1 b{background:var(--magenta)}
+.c2{left:70%;top:78%;animation-delay:-2s}.c2 svg{fill:var(--purple)}.c2 b{background:var(--purple)}
+.c3{left:-34px;top:88%;animation-delay:-4s}.c3 svg{fill:var(--blue)}.c3 b{background:var(--blue)}
 @keyframes drift{0%,100%{transform:translate(0,0)}33%{transform:translate(14px,-10px)}66%{transform:translate(-8px,8px)}}
 .hfoot{position:relative;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:12px 20px;gap:12px}
 .hfoot .tag{font-size:14.5px;font-weight:600;line-height:1.45}
